@@ -1,4 +1,6 @@
 import requests
+import threading
+import time
 
 BASE_URL = "http://localhost:80"
 
@@ -51,11 +53,29 @@ def delete_all_objects():
         print("DELETE /: All objects deleted successfully")
     else:
         print("Failed to delete all objects:", response.status_code)
+        
+def perform_api_calls(obj_id, content):
+    create_or_update_object(obj_id, content)
+    get_object(obj_id)
+    compress_object(obj_id)
+    delete_object(obj_id)
+        
+def load_generator(thread_count, obj_id, content):
+    """Starts multiple threads to generate load."""
+    threads = []
+    for _ in range(thread_count):
+        thread = threading.Thread(target=create_or_update_object, args=(obj_id, content))
+        thread.start()
+        threads.append(thread)
+    
+    for thread in threads:
+        thread.join()
 
 if __name__ == "__main__":
-        get_objects()
-        create_or_update_object("test1", "Sample content for test1")
-        get_object("test1")
-        compress_object("test1")
-        delete_object("test1")
-        delete_all_objects()
+    while True:
+        load_generator(20, "test", "Sample content for test1")
+        # create_or_update_object("test1", "Sample content for test1")
+        # get_object("test1")
+        # compress_object("test1")
+        # delete_object("test1")
+        # delete_all_objects()
