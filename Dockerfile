@@ -3,7 +3,7 @@ FROM alpine:3.19.1
 RUN mkdir /server
 RUN mkdir /server/data
 RUN apk update
-RUN apk add python3 py3-pip werkzeug
+RUN apk add python3 py3-pip
 WORKDIR /server
 RUN python3 -m venv ./venv
 ENV PATH="/server/venv/bin:$PATH"
