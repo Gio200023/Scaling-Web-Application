@@ -63,19 +63,22 @@ def perform_api_calls(obj_id, content):
 def load_generator(thread_count, obj_id, content):
     """Starts multiple threads to generate load."""
     threads = []
+    count = 0
     for _ in range(thread_count):
-        thread = threading.Thread(target=create_or_update_object, args=(obj_id, content))
+        thread = threading.Thread(target=create_or_update_object, args=(str(obj_id + str(count)), content))
         thread.start()
         threads.append(thread)
+        count += 1
     
     for thread in threads:
         thread.join()
 
 if __name__ == "__main__":
-    while True:
-        load_generator(20, "test", "Sample content for test1")
-        # create_or_update_object("test1", "Sample content for test1")
-        # get_object("test1")
-        # compress_object("test1")
-        # delete_object("test1")
-        # delete_all_objects()
+    delete_all_objects()
+    try:    
+        while True:
+            load_generator(20, "test", "Sample content for test1")
+    except KeyboardInterrupt:
+        print("Interrupted!")
+        time.sleep(1)
+        delete_all_objects()
