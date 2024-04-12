@@ -11,6 +11,6 @@ ENV PATH="/server/venv/bin:$PATH"
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
 
-COPY objst.py .
+COPY ./backend/objst.py .
 
 ENTRYPOINT python3 objst.py

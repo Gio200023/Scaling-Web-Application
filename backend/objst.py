@@ -168,11 +168,11 @@ api.add_resource(ObjectStore, '/')
 # Configure rate limiting
 #
 
-limiter = Limiter(
-    get_remote_address,
-    app=app,
-    default_limits=["10 per second"]
-)
+# limiter = Limiter(
+#     get_remote_address,
+#     app=app,
+#     default_limits=["10 per second"]
+# )
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001)
