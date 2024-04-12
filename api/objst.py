@@ -115,8 +115,6 @@ datadir = DataDir(data_path)
 class Object(Resource):
     def get(self, obj_id):
         random_delay()
-        if '/' in obj_id or '\\' in obj_id:
-            raise BadRequest('Invalid object ID')
         content = datadir.get_object(obj_id)
         if not content:
             abort(404)
@@ -125,10 +123,6 @@ class Object(Resource):
 
     def put(self, obj_id):
         random_delay()
-        if not request.form['content']:
-            raise BadRequest('Content is required')
-        if '/' in obj_id or '\\' in obj_id:
-            raise BadRequest('Invalid object ID')
         success = datadir.put_object(obj_id, request.form['content'])
         if not success:
             abort(400, 'Unable to store object')

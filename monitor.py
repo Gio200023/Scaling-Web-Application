@@ -40,8 +40,9 @@ def analyze_stats(stats):
 if __name__ == "__main__":
     haproxy_stats_url = 'http://localhost:8081/;csv'
     try:
-        stats = fetch_haproxy_stats(haproxy_stats_url)
-        decision = analyze_stats(stats)
-        print(f"Decision: {decision}")
+        while True:
+            stats = fetch_haproxy_stats(haproxy_stats_url)
+            decision = analyze_stats(stats)
+            print(f"Decision: {decision}")
     except Exception as e:
         print(f"Failed to fetch or analyze HAProxy stats: {e}")
