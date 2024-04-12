@@ -12,7 +12,7 @@ class ContainerManager:
 
     def __init__(self):
         print("Initializing haproxy configuration...")
-        shutil.copyfile(src='../haproxy/haproxy.cfg.temp', dst='../haproxy/haproxy.cfg')
+        shutil.copyfile(src='./haproxy.cfg.temp', dst='./haproxy.cfg')
         print("Done")
         print("Initializing podman client...")
         self.client = PodmanClient(
@@ -32,7 +32,7 @@ class ContainerManager:
             ),
             mounts=[{
                 'type': 'bind',
-                'source': os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), '../haproxy/haproxy.cfg'),
+                'source': os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), './haproxy.cfg'),
                 'target': '/usr/local/etc/haproxy/haproxy.cfg',
                 'read_only': True
             }],
@@ -61,7 +61,7 @@ class ContainerManager:
         )
 
     def add_to_haproxy_cfg(self, container: Container, port: str):
-        file = open('../haproxy/haproxy.cfg', 'a')
+        file = open('./haproxy.cfg', 'a')
         file.write('  server ' + container.name + ' ' + self.network_ip + ':' + port + ' check\n')
         self.haproxy_container.restart()
 
