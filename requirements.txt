@@ -24,6 +24,7 @@ markdown-it-py==3.0.0
 MarkupSafe==2.1.5
 mdurl==0.1.2
 msgpack==1.0.8
+numpy==1.26.4
 ordered-set==4.1.0
 packaging==23.2
 podman==5.0.0

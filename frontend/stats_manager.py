@@ -7,6 +7,7 @@ from requests.exceptions import ConnectionError
 class StatsManager:
     url = 'http://localhost:8081/;csv'
     current_sessions = []
+    response_times = []
 
     def perform_health_check(self):
         try:
@@ -17,6 +18,7 @@ class StatsManager:
 
     def reset(self):
         self.current_sessions = []
+        self.response_times = []
 
     def fetch_stats(self):
         """Fetch the stats from HAProxy stats URL, parse, filter and return relevant data."""
@@ -26,8 +28,14 @@ class StatsManager:
         reader = csv.DictReader(file)
         filtered_stats = [row for row in reader if row['svname'].startswith('api')]
 
-        for index, stat in enumerate(filtered_stats):
-            if index >= len(self.current_sessions):
-                self.current_sessions.append(int(stat['scur']))
-            else:
-                self.current_sessions[index] += int(stat['scur'])
+        for stat in filtered_stats:
+            # if index >= len(self.current_sessions):
+            #     self.current_sessions.append(int(stat['scur']))
+            # else:
+            #     self.current_sessions[index] += int(stat['scur'])
+            self.current_sessions.append(int(stat['scur']))
+            self.response_times.append(int(stat['ttime']))
+            # if index >= len(self.response_times):
+            #     self.response_times.append(int(stat['ttime']))
+            # else:
+            #     self.response_times[index] += int(stat['ttime'])

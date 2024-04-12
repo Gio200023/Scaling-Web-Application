@@ -79,6 +79,7 @@ class ContainerManager:
 
     def create(self):
         self.port += 1
+        print(self.port)
         container = self.client.containers.create(
             image=self.get_image(),
             volumes={'data': {'bind': '/server/data', 'mode': 'rw'}},
@@ -121,6 +122,7 @@ class ContainerManager:
 
         else:
             containers_to_start = target_containers - current_containers
+            print(containers_to_start)
             for _ in range(containers_to_start):
                 self.create()
         self.restart_haproxy_container()
