@@ -1,20 +1,45 @@
 import time
-from locust import HttpUser, task, between
+from locust import FastHttpUser, task, constant
 import random
 
-class QuickstartUser(HttpUser):
-    wait_time = between(1, 5)
+
+class QuickstartUser(FastHttpUser):
+    wait_time = constant(1)
+    ids = []
+
+    def get_id(self):
+        if len(self.ids) == 0:
+            return None
+        return random.choice(self.ids)
 
     @task
-    def hello_world(self):
-        self.client.get("/")
+    def get_all(self):
+        self.client.get(url="/")
 
-    @task(3)
-    def view_items(self):
-        rand = random.randint(1,10)
-        for item_id in range(2):
-            self.client.put("/objs/test"+str(rand))
-            time.sleep(1)
+    @task
+    def get_one(self):
+        id = self.get_id()
+        if id is None:
+            return self.get_all()
+        self.client.get(url='/objs/' + id)
 
-    # def on_start(self):
-    #     self.client.post("/login", json={"username":"foo", "password":"bar"})
+    @task
+    def get_one_compressed(self):
+        id = self.get_id()
+        if id is None:
+            return self.get_all()
+        self.client.get(url='/objs/' + id)
+
+    @task
+    def create_or_update(self):
+        id = self.get_id()
+        if id is None:
+            return self.get_all()
+        self.client.put(url='/objs/' + id, data={'content': "XXXXRVDFBGSZDBTDZCDFGNDXBDXSDBDDGF"})
+
+    @task
+    def delete_one(self):
+        id = self.get_id()
+        if id is None:
+            return self.get_all()
+        self.client.delete(url='/objs/' + id)

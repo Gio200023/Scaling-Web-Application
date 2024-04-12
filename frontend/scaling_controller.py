@@ -16,7 +16,7 @@ class ScalingController:
         print(current_sessions)
         total_current_sessions = sum(current_sessions) / 100
         print(total_current_sessions)
-        target_containers = math.ceil(total_current_sessions / 10)
+        target_containers = math.ceil(total_current_sessions / 100)
         target_containers = max(target_containers, 1)
         self.container_manager.scale_to(target_containers=target_containers)
 

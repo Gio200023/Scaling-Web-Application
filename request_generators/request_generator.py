@@ -77,7 +77,7 @@ if __name__ == "__main__":
     delete_all_objects()
     try:    
         while True:
-            load_generator(250, "test", "Sample content for test1")
+            load_generator(5000, "test", "Sample content for test1")
     except KeyboardInterrupt:
         print("Interrupted!")
         time.sleep(1)
