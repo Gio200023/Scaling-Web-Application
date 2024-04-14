@@ -43,7 +43,7 @@ class ContainerManager:
 
     def init_haproxy_container(self):
         print("Initializing haproxy configuration...")
-        shutil.copyfile(src='./haproxy.cfg.temp', dst='./haproxy.cfg')
+        shutil.copyfile(src='./frontend/haproxy.cfg.temp', dst='./frontend/haproxy.cfg')
         print("Done")
         print("Initializing haproxy container...")
         try:
@@ -56,7 +56,7 @@ class ContainerManager:
                 ),
                 mounts=[{
                     'type': 'bind',
-                    'source': os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), './haproxy.cfg'),
+                    'source': os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), './frontend/haproxy.cfg'),
                     'target': '/usr/local/etc/haproxy/haproxy.cfg',
                     'read_only': True
                 }],
@@ -89,7 +89,7 @@ class ContainerManager:
         )
         container.start()
         container.reload()
-        file = open('./haproxy.cfg', 'a')
+        file = open('./frontend/haproxy.cfg', 'a')
         file.write('  server ' + container.name + ' ' + self.network_ip + ':' + str(self.port) + ' check\n')
 
     def remove(self):
@@ -97,10 +97,10 @@ class ContainerManager:
         container = self.list()[-1]
         container.stop(ignore=True, timeout=0)
         container.remove(force=True, v=True)
-        file = open('./haproxy.cfg', 'r')
+        file = open('./frontend/haproxy.cfg', 'r')
         lines = file.readlines()[:-1]
 
-        file = open('./haproxy.cfg', 'w')
+        file = open('./frontend/haproxy.cfg', 'w')
         file.writelines(lines)
 
     def restart_haproxy_container(self):

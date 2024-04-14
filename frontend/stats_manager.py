@@ -8,12 +8,14 @@ class StatsManager:
     url = 'http://localhost:8081/;csv'
     current_sessions = []
     response_times = []
+    containers = []
 
     def perform_health_check(self):
         try:
             requests.get(url=self.url)
             return True
-        except ConnectionError:
+        except ConnectionError as e:
+            print(e)
             return False
 
     def reset(self):
@@ -22,11 +24,18 @@ class StatsManager:
 
     def fetch_stats(self):
         """Fetch the stats from HAProxy stats URL, parse, filter and return relevant data."""
-        response = requests.get(url=self.url)
+        retry = True
+        while retry:
+            try:
+                response = requests.get(url=self.url)
+                retry = False
+            except ConnectionError:
+                pass
         response.raise_for_status()
         file = StringIO(response.text)
         reader = csv.DictReader(file)
         filtered_stats = [row for row in reader if row['svname'].startswith('api')]
+        self.containers.append(len(filtered_stats))
 
         for stat in filtered_stats:
             # if index >= len(self.current_sessions):

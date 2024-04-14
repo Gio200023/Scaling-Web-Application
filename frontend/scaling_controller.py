@@ -11,6 +11,21 @@ class ScalingController:
     def __init__(self, stats_manager: StatsManager, container_manager: ContainerManager):
         self.stats_manager = stats_manager
         self.container_manager = container_manager
+        self.determine_required_containers()
+
+        try:
+            while True:
+                waited = 0
+                print(waited)
+                self.stats_manager.reset()
+                while waited < 5:
+                    self.stats_manager.fetch_stats()
+                    time.sleep(1)
+                    waited += 1
+
+                self.determine_required_containers()
+        finally:
+            self.container_manager.scale_to(target_containers=0)
 
     def determine_required_containers(self):
         self.stats_manager.fetch_stats()
@@ -48,17 +63,3 @@ if __name__ == "__main__":
     stats_manager = StatsManager()
     container_manager = ContainerManager(stats_manager=stats_manager)
     scaling_controller = ScalingController(stats_manager=stats_manager, container_manager=container_manager)
-    scaling_controller.determine_required_containers()
-
-    try:
-        while True:
-            waited = 0
-            stats_manager.reset()
-            while waited < 5:
-                stats_manager.fetch_stats()
-                time.sleep(0.05)
-                waited += 0.05
-
-            scaling_controller.determine_required_containers()
-    finally:
-        scaling_controller.container_manager.scale_to(target_containers=0)

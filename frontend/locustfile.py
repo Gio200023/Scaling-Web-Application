@@ -1,9 +1,9 @@
-import time
 from locust import FastHttpUser, task, constant
 import random
 
 
 class QuickstartUser(FastHttpUser):
+    host = "http://localhost:80"
     wait_time = constant(1)
     ids = []
 
