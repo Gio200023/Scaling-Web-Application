@@ -4,6 +4,7 @@ from locust.env import Environment
 from locustfile import QuickstartUser
 from locust.log import setup_logging
 from stats_manager import StatsManager
+import matplotlib.pyplot as plt
 
 
 def spawn_users(num_users):
@@ -11,6 +12,10 @@ def spawn_users(num_users):
 
 
 if __name__ == "__main__":
+    curr_sess = []
+    resp_time = []
+    conts = []
+
     setup_logging("INFO")
     stats_manager = StatsManager()
     env = Environment(user_classes=[QuickstartUser])
@@ -26,7 +31,41 @@ if __name__ == "__main__":
     env.runner.spawn_users({QuickstartUser.__name__: 1000})
     env.runner.greenlet.join()
     web_ui.stop()
-    print(stats_manager.current_sessions)
-    print(stats_manager.response_times)
-    print(stats_manager.containers)
-    print(len(stats_manager.containers))
+    # print(stats_manager.current_sessions)
+    # print(stats_manager.response_times)
+    # print(stats_manager.containers)
+    # print(len(stats_manager.containers))
+    current_session = stats_manager.current_sessions
+    response_times = stats_manager.response_times
+    container = stats_manager.containers
+    curr_sess.append(current_session)
+    resp_time.append(response_times)
+    conts.append(container)
+    
+    plt.figure(figsize=(14, 7))
+
+# Current Sessions Plot
+    plt.subplot(3, 1, 1)  # 3 rows, 1 column, 1st subplot
+    plt.plot(current_session, label='Current Sessions', color='blue')
+    plt.title('Current Sessions Over Time')
+    plt.xlabel('Steps')
+    plt.ylabel('Number of Sessions')
+
+    # Response Times Plot
+    plt.subplot(3, 1, 2)
+    plt.plot(response_times, label='Response Times', color='red')
+    plt.title('Response Times Over Time')
+    plt.xlabel('Steps')
+    plt.ylabel('Response Time (ms)')
+
+    # Containers Plot
+    plt.subplot(3, 1, 3)
+    plt.plot(container, label='Number of Containers', color='green')
+    plt.title('Number of Containers Over Time')
+    plt.xlabel('Steps')
+    plt.ylabel('Number of Containers')
+
+    plt.tight_layout()  
+    plt.savefig("experiments.png")
+    
+    
