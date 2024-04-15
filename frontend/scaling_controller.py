@@ -17,7 +17,7 @@ class ScalingController:
         try:
             while True:
                 waited = 0
-                while waited < 1:
+                while waited < 5:
                     self.stats_manager.fetch_stats()
                     time.sleep(0.1)
                     waited += 0.1
@@ -33,26 +33,29 @@ class ScalingController:
             self.container_manager.scale_to(target_containers=1)
             return
 
-        avg_response_times = self.stats_manager.get_average_response_times(last_n=20)
+        avg_response_times = self.stats_manager.get_average_response_times(last_n=100)
         avg_response_time = numpy.average(avg_response_times)
+        response_times = self.stats_manager.get_response_times(last_n=100)
+        ninety_ninth_response_time = numpy.percentile(response_times, 99)
         print("Average response time: " + str(avg_response_time) + "ms")
+        print("99th percentile response time: " + str(ninety_ninth_response_time) + "ms")
         num_containers = len(self.container_manager.list())
-        if avg_response_time > 500:
-            num_containers += math.ceil(avg_response_time / 500)
+        if avg_response_time > 200:
+            num_containers += math.ceil((avg_response_time - 200) / 200)
 
-        if avg_response_time < 200:
-            num_containers -= 1
+        if ninety_ninth_response_time > 300:
+            num_containers += math.ceil((ninety_ninth_response_time - 300) / 300)
+        else:
+            if avg_response_time < 150:
+                num_containers -= 1
 
-        if avg_response_time < 150:
-            num_containers -= 1
+            if avg_response_time < 100:
+                num_containers -= 1
 
-        if avg_response_time < 100:
-            num_containers -= 1
+            if avg_response_time == 0:
+                num_containers = 1
 
-        if avg_response_time == 0:
-            num_containers = 1
-
-        # self.container_manager.scale_to(target_containers=1)
+        # self.container_manager.scale_to(target_containers=10)
         self.container_manager.scale_to(target_containers=max(num_containers, 1))
 
 

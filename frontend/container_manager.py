@@ -104,9 +104,11 @@ class ContainerManager:
         file.writelines(lines)
 
     def restart_haproxy_container(self):
+        x = time.time()
         self.haproxy_container.restart(timeout=0)
         while not self.stats_manager.perform_health_check():
             time.sleep(0.05)
+        self.stats_manager.downtime += time.time() - x
 
     def scale_to(self, target_containers: int):
         current_containers = len(self.list())

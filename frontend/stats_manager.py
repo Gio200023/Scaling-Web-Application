@@ -10,12 +10,14 @@ from requests.exceptions import ConnectionError
 class StatsManager:
     url = 'http://localhost:8081/;csv'
     stats = []
+    request_rates = []
+    downtime = 0
 
     def perform_health_check(self):
         try:
             requests.get(url=self.url)
             return True
-        except ConnectionError as e:
+        except:
             return False
 
     def get_current_sessions(self):
@@ -61,14 +63,19 @@ class StatsManager:
         response.raise_for_status()
         file = StringIO(response.text)
         reader = csv.DictReader(file)
-        filtered_stats = [row for row in reader if row['svname'].startswith('api')]
+        x = [row for row in reader]
+
+        filtered_stats = [row for row in x if row['svname'].startswith('api')]
         if len(filtered_stats) == 0:
             return
+
+        frontend_stats = [row for row in x if row['# pxname'] == 'loadbalancer'][0]
+        self.request_rates.append(frontend_stats['req_rate'])
 
         stats = []
         for stat in filtered_stats:
             stats.append({
                 "sessions": int(stat['scur']),
-                "response_time": int(stat['ttime'])
+                "response_time": int(stat['rtime'])
             })
         self.stats.append(stats)

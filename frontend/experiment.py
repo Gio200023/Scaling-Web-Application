@@ -21,24 +21,26 @@ if __name__ == "__main__":
     runner = env.create_local_runner()
     web_ui = env.create_web_ui('127.0.0.1', 8079)
 
-    for i in range(120):
+    for i in range(180):
         gevent.spawn_later(i, stats_manager.fetch_stats)
 
-    gevent.spawn_later(5, spawn_users, 250)
-    gevent.spawn_later(10, spawn_users, 250)
-    gevent.spawn_later(20, spawn_users, 2000)
-    gevent.spawn_later(80, stop_users, 2000)
-    gevent.spawn_later(120, spawn_users, 250)
-    gevent.spawn_later(130, spawn_users, 250)
-    gevent.spawn_later(140, stop_users, 1000)
-    gevent.spawn_later(160, spawn_users, 5000)
+    gevent.spawn_later(5, spawn_users, 200)
+    gevent.spawn_later(10, spawn_users, 200)
+    gevent.spawn_later(20, spawn_users, 200)
+    gevent.spawn_later(40, stop_users, 425)
+    gevent.spawn_later(60, spawn_users, 500)
+    gevent.spawn_later(80, spawn_users, 50)
+    gevent.spawn_later(100, stop_users, 150)
+    gevent.spawn_later(140, stop_users, 500)
+    gevent.spawn_later(160, stop_users, 50)
     gevent.spawn_later(180, runner.quit)
-    env.runner.spawn_users({QuickstartUser.__name__: 250})
+    env.runner.spawn_users({QuickstartUser.__name__: 25})
     env.runner.greenlet.join()
     web_ui.stop()
 
     current_session = stats_manager.get_current_sessions()
     response_times = stats_manager.get_average_response_times(last_n=None)
+    request_rates = stats_manager.request_rates
     container = [len(x) for x in stats_manager.stats]
 
     plt.figure(figsize=(14, 7))
@@ -50,6 +52,13 @@ if __name__ == "__main__":
     plt.xlabel('Steps')
     plt.ylabel('Number of Sessions')
 
+    # Request rate Plot
+    # plt.subplot(3, 1, 1)
+    # plt.plot(request_rates, label='Requests Per Second', color='green')
+    # plt.title('RPS Over Time')
+    # plt.xlabel('Steps')
+    # plt.ylabel('Requests Per Second')
+
     # Response Times Plot
     plt.subplot(3, 1, 2)
     plt.plot(response_times, label='Response Times', color='red')
@@ -59,10 +68,11 @@ if __name__ == "__main__":
 
     # Containers Plot
     plt.subplot(3, 1, 3)
-    plt.plot(container, label='Number of Containers', color='green')
+    plt.plot(container, label='Number of Containers', color='blue')
     plt.title('Number of Containers Over Time')
     plt.xlabel('Steps')
     plt.ylabel('Number of Containers')
 
     plt.tight_layout()
     plt.savefig("experiments.png")
+    print(stats_manager.downtime)
