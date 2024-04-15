@@ -4,7 +4,7 @@ import random
 
 class QuickstartUser(FastHttpUser):
     host = "http://localhost:80"
-    wait_time = constant(1)
+    wait_time = constant(0.5)
     ids = []
 
     def get_id(self):

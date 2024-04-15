@@ -3,6 +3,7 @@ import shutil
 import sys
 import time
 
+import gevent
 from podman import PodmanClient
 from podman.domain.containers import Container
 from podman.domain.networks import Network
@@ -56,7 +57,7 @@ class ContainerManager:
                 ),
                 mounts=[{
                     'type': 'bind',
-                    'source': os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), './frontend/haproxy.cfg'),
+                    'source': os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), './haproxy.cfg'),
                     'target': '/usr/local/etc/haproxy/haproxy.cfg',
                     'read_only': True
                 }],
@@ -79,7 +80,6 @@ class ContainerManager:
 
     def create(self):
         self.port += 1
-        print(self.port)
         container = self.client.containers.create(
             image=self.get_image(),
             volumes={'data': {'bind': '/server/data', 'mode': 'rw'}},
@@ -115,15 +115,16 @@ class ContainerManager:
 
         print("Scaling from " + str(current_containers) + " to " + str(target_containers))
 
+        events = []
         if current_containers > target_containers:
             containers_to_stop = current_containers - target_containers
             for _ in range(containers_to_stop):
-                self.remove()
+                events.append(gevent.spawn(self.remove))
 
         else:
             containers_to_start = target_containers - current_containers
-            print(containers_to_start)
             for _ in range(containers_to_start):
-                self.create()
+                events.append(gevent.spawn(self.create))
+        gevent.joinall(events)
         self.restart_haproxy_container()
         print("Scaled from " + str(current_containers) + " to " + str(target_containers))

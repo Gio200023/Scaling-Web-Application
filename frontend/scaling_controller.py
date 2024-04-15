@@ -1,6 +1,7 @@
 import math
 import time
 
+import gevent
 import numpy
 
 from container_manager import ContainerManager
@@ -16,12 +17,10 @@ class ScalingController:
         try:
             while True:
                 waited = 0
-                print(waited)
-                self.stats_manager.reset()
-                while waited < 5:
+                while waited < 1:
                     self.stats_manager.fetch_stats()
-                    time.sleep(1)
-                    waited += 1
+                    time.sleep(0.1)
+                    waited += 0.1
 
                 self.determine_required_containers()
         finally:
@@ -30,33 +29,31 @@ class ScalingController:
     def determine_required_containers(self):
         self.stats_manager.fetch_stats()
 
-        if (len(self.stats_manager.response_times) == 0):
+        if len(self.stats_manager.stats) == 0:
             self.container_manager.scale_to(target_containers=1)
             return
 
-        average_response_time = numpy.average(self.stats_manager.response_times)
-        percentile_response_time = numpy.percentile(self.stats_manager.response_times, 95)
-        print("Average response time: " + str(average_response_time) + "ms")
-        print("95th percentile response time: " + str(percentile_response_time) + "ms")
+        avg_response_times = self.stats_manager.get_average_response_times(last_n=20)
+        avg_response_time = numpy.average(avg_response_times)
+        print("Average response time: " + str(avg_response_time) + "ms")
         num_containers = len(self.container_manager.list())
-        if average_response_time > 250:
-            extra_containers = math.ceil(average_response_time / 250)
-            print("X", num_containers, extra_containers, num_containers + extra_containers)
-            self.container_manager.scale_to(target_containers=max(num_containers + extra_containers, 1))
-        elif percentile_response_time > 1000:
-            extra_containers = math.ceil(percentile_response_time / 1000)
-            print("Y", num_containers, extra_containers, num_containers + extra_containers)
-            self.container_manager.scale_to(target_containers=max(num_containers + extra_containers, 1))
-        elif average_response_time < 100 and percentile_response_time < 500:
-            self.container_manager.scale_to(target_containers=max(num_containers - 1, 1))
+        if avg_response_time > 500:
+            num_containers += math.ceil(avg_response_time / 500)
 
-    # current_sessions = self.stats_manager.current_sessions
-    # print(current_sessions)
-    # total_current_sessions = sum(current_sessions) / 100
-    # print(total_current_sessions)
-    # target_containers = math.ceil(total_current_sessions / 100)
-    # target_containers = max(target_containers, 1)
-    # self.container_manager.scale_to(target_containers=target_containers)
+        if avg_response_time < 200:
+            num_containers -= 1
+
+        if avg_response_time < 150:
+            num_containers -= 1
+
+        if avg_response_time < 100:
+            num_containers -= 1
+
+        if avg_response_time == 0:
+            num_containers = 1
+
+        # self.container_manager.scale_to(target_containers=1)
+        self.container_manager.scale_to(target_containers=max(num_containers, 1))
 
 
 if __name__ == "__main__":
